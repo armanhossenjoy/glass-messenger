@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, User, MessageSquare, Phone, Video, Image as ImageIcon, LogOut, Copy, Check, X, Camera, ArrowLeft, UserPlus, Search } from 'lucide-react';
+import { Send, User, MessageSquare, Phone, Video, Image as ImageIcon, LogOut, Copy, Check, X, Camera, ArrowLeft, UserPlus, Search, Volume2 } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import Peer from 'peerjs';
 
@@ -692,6 +692,25 @@ function App() {
         </div>
       )}
 
+      const [callDuration, setCallDuration] = useState(0);
+
+  // Timer Logic
+  useEffect(() => {
+        let interval;
+      if (isCalling) {
+        interval = setInterval(() => setCallDuration(prev => prev + 1), 1000);
+      document.title = `Call (${Math.floor(callDuration / 60)}:${(callDuration % 60).toString().padStart(2, '0')}) - PMFP`;
+    } else {
+        setCallDuration(0);
+      document.title = "PMFP";
+    }
+    return () => clearInterval(interval);
+  }, [isCalling, callDuration]);
+
+  const formatTime = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
+
+      // ... (rest of render)
+
       {isCalling && (
         <div className="modal-overlay" style={{ background: 'rgba(15, 23, 42, 0.95)' }}>
           <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
@@ -703,17 +722,37 @@ function App() {
                 </>
               ) : (
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ width: '140px', height: '140px', borderRadius: '50px', background: 'rgba(255,255,255,0.05)', margin: '0 auto 30px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '140px', height: '140px', borderRadius: '50px', background: 'rgba(255,255,255,0.05)', margin: '0 auto 30px', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse 2s infinite' }}>
                     <User size={80} />
                   </div>
-                  <h2 style={{ fontSize: '28px', fontWeight: '800' }}>{activeFriend?.friend_username}</h2>
-                  <p style={{ opacity: 0.6 }}>Voice Connection Active</p>
-                  {/* Invisible Audio Element for Voice Calls */}
-                  <audio ref={remoteVideoRef} autoPlay playsInline />
+                  <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '10px' }}>{activeFriend?.friend_username}</h2>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'monospace', opacity: 0.8, marginBottom: '20px' }}>
+                    {formatTime(callDuration)}
+                  </div>
+
+                  {/* TRICK: Use VIDEO tag for audio to enforce Loudspeaker on Mobile */}
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    style={{ width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' }}
+                  />
                 </div>
               )}
             </div>
-            <div style={{ padding: '60px', background: 'linear-gradient(transparent, rgba(0,0,0,0.4))', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ padding: '60px', background: 'linear-gradient(transparent, rgba(0,0,0,0.4))', display: 'flex', justifyContent: 'center', gap: '20px' }}>
+              <button className="glass-button" style={{ width: '60px', height: '60px', borderRadius: '30px', background: 'rgba(255,255,255,0.1)', border: 'none' }} onClick={() => {
+                // Attempt to toggle speaker (experimental)
+                if (remoteVideoRef.current && remoteVideoRef.current.setSinkId) {
+                  // This is just a placeholder action as setSinkId needs device ID
+                  alert("To switch to Speaker, please use your device's volume settings or control center.");
+                } else {
+                  alert("Please use your phone's Control Center to toggle Speaker/Earpiece.");
+                }
+              }} title="Speaker">
+                <Volume2 size={24} />
+              </button>
+
               <button className="glass-button" style={{ width: '70px', height: '70px', borderRadius: '35px', background: 'var(--error-accent)', border: 'none', padding: 0 }} onClick={endCall}>
                 <X size={32} />
               </button>
