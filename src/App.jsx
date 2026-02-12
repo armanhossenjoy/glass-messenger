@@ -265,15 +265,29 @@ function App() {
     }
   }, [incomingCall]);
 
-  // Play notification on new message (helper)
+  // Play notification on new message (helper) - Using Web Audio API
   const playNotificationSound = () => {
     console.log('🔔 Attempting to play notification sound...');
-    if (notificationSoundRef.current) {
-      notificationSoundRef.current.play()
-        .then(() => console.log('🔔 Notification sound played successfully'))
-        .catch(err => console.warn("🔕 Notification blocked by browser:", err));
-    } else {
-      console.error('🔕 Notification sound ref is null!');
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+
+      console.log('🔔 Notification sound played successfully');
+    } catch (err) {
+      console.warn("🔕 Notification sound failed:", err);
     }
   };
 
@@ -649,9 +663,10 @@ function App() {
   if (!user) {
     return (
       <>
-        {/* Hidden Audio Players */}
-        <audio ref={ringtoneRef} loop src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" />
-        <audio ref={notificationSoundRef} src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3" />
+        {/* Hidden Audio Player for Ringtone */}
+        <audio ref={ringtoneRef} loop>
+          <source src="https://cdn.freesound.org/previews/320/320655_5260872-lq.mp3" type="audio/mpeg" />
+        </audio>
         <div className="glass-card" style={{ padding: '50px 40px', width: '90%', maxWidth: '420px', textAlign: 'center', animation: 'slideUp 0.6s ease-out' }}>
           <div style={{ marginBottom: '32px' }}>
             <div style={{ background: 'linear-gradient(135deg, var(--primary-accent), var(--secondary-accent))', width: '90px', height: '90px', borderRadius: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 15px 30px rgba(99, 102, 241, 0.3)', transform: 'rotate(-5deg)' }}>
@@ -704,9 +719,10 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Hidden Audio Players */}
-      <audio ref={ringtoneRef} loop src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" />
-      <audio ref={notificationSoundRef} src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3" />
+      {/* Hidden Audio Player for Ringtone */}
+      <audio ref={ringtoneRef} loop>
+        <source src="https://cdn.freesound.org/previews/320/320655_5260872-lq.mp3" type="audio/mpeg" />
+      </audio>
       {/* SIDEBAR: FRIEND LIST */}
       <aside className={`sidebar glass-card ${view === 'list' ? 'active' : ''}`}>
         {/* Sidebar Header */}
