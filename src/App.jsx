@@ -820,7 +820,11 @@ function App() {
                 </div>
                 <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{activeFriend.friend_username}</h3>
-                  <span style={{ fontSize: '11px', color: 'var(--success-accent)', fontWeight: '600' }}>Online</span>
+                  {onlineUserIds.includes(activeFriend.friend_id) ? (
+                    <span style={{ fontSize: '11px', color: 'var(--success-accent)', fontWeight: '600' }}>Online</span>
+                  ) : (
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)', opacity: 0.5 }}>Offline</span>
+                  )}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
