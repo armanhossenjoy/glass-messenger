@@ -181,6 +181,25 @@ function App() {
         console.error("Autoplay failed:", err);
         alert("Click the screen to enable audio! (Browser Policy)");
       });
+
+      // --- WEB AUDIO API FALLBACK (Nuclear Option for Mobile) ---
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          const audioCtx = new AudioContext();
+          const source = audioCtx.createMediaStreamSource(remoteStream);
+          source.connect(audioCtx.destination);
+
+          // Resume context if suspended (common on mobile)
+          if (audioCtx.state === 'suspended') {
+            document.addEventListener('click', () => audioCtx.resume(), { once: true });
+            document.addEventListener('touchstart', () => audioCtx.resume(), { once: true });
+          }
+          console.log("Web Audio API Initialized:", audioCtx.state);
+        }
+      } catch (e) {
+        console.error("Web Audio API Failed:", e);
+      }
     }
   }, [remoteStream, callType]);
 
