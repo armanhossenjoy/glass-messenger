@@ -836,9 +836,36 @@ function App() {
               </div>
               <button className="glass-button" style={{ background: 'var(--primary-accent)', border: 'none', marginTop: '10px' }} onClick={handleUpdateProfile}>Save Changes</button>
 
+  const handleLogout = async () => {
+                // 1. Clear Local State
+                setMessages([]);
+              setFriends([]);
+              setUser(null);
+              setDisplayName('');
+              setFullName('');
+              setBio('');
+
+              // 2. Destroy Peer Connection
+              if (peer) {
+                peer.destroy();
+              setPeer(null);
+    }
+
+              // 3. Sign Out from Supabase
+              await supabase.auth.signOut();
+              setIsLogin(true); // Return to Login Screen
+              setShowProfile(false); // Close modal
+  };
+
+              if (!user) {
+                // ... (Login Screen)
+              }
+
+              return (
+              // ...
               <div style={{ width: '100%', height: '1px', background: 'var(--glass-border)', margin: '10px 0' }}></div>
 
-              <button className="glass-button" style={{ background: 'rgba(239, 68, 68, 0.15)', color: 'var(--error-accent)', border: 'none', justifyContent: 'center' }} onClick={() => supabase.auth.signOut()}>
+              <button className="glass-button" style={{ background: 'rgba(239, 68, 68, 0.15)', color: 'var(--error-accent)', border: 'none', justifyContent: 'center' }} onClick={handleLogout}>
                 <LogOut size={18} /> Logout
               </button>
             </div>
