@@ -156,7 +156,7 @@ function App() {
 
   useEffect(() => {
     if (remoteStream && remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
-  }, [remoteStream]);
+  }, [remoteStream, callType]);
 
   useEffect(() => {
     if (activeFriend && user) {
@@ -688,6 +688,8 @@ function App() {
                   </div>
                   <h2 style={{ fontSize: '28px', fontWeight: '800' }}>{activeFriend?.friend_username}</h2>
                   <p style={{ opacity: 0.6 }}>Voice Connection Active</p>
+                  {/* Invisible Audio Element for Voice Calls */}
+                  <audio ref={remoteVideoRef} autoPlay playsInline />
                 </div>
               )}
             </div>
