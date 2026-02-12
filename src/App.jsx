@@ -34,6 +34,7 @@ function App() {
   const [isCallConnected, setIsCallConnected] = useState(false);
   const [onlineUserIds, setOnlineUserIds] = useState([]); // Array of peer IDs (user IDs) who are online
   const [callState, setCallState] = useState('idle'); // 'idle' | 'calling' | 'ringing' | 'connected' | 'declined'
+  const [callTimer, setCallTimer] = useState(null); // Timer for call duration
 
   // Timer Logic
   useEffect(() => {
@@ -47,6 +48,30 @@ function App() {
     }
     return () => clearInterval(interval);
   }, [isCalling, isCallConnected, callDuration]);
+
+  // Call Timer Management
+  useEffect(() => {
+    if (callState === 'connected') {
+      // Start timer when call is connected
+      const timer = setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+      setCallTimer(timer);
+    } else {
+      // Clear timer when call ends
+      if (callTimer) {
+        clearInterval(callTimer);
+        setCallTimer(null);
+      }
+    }
+
+    return () => {
+      if (callTimer) {
+        clearInterval(callTimer);
+        setCallTimer(null);
+      }
+    };
+  }, [callState]);
 
   const formatTime = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
 
@@ -211,6 +236,13 @@ function App() {
         console.log("Incoming call from:", incoming.peer);
         setIncomingCall(incoming);
         setCallType(incoming.metadata?.type || 'video');
+        
+        // Check if we are already in a call
+        if (isCalling) {
+          console.log("Busy: Already in a call, rejecting incoming call");
+          incoming.close();
+          return;
+        }
       });
 
       setPeer(newPeer);
@@ -510,6 +542,14 @@ function App() {
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       alert("Camera/Mic access is blocked. This usually happens on mobile if you are not using HTTPS. Check the walkthrough for the fix!");
+      return;
+    }
+
+    // Check if friend is online
+    const isFriendOnline = onlineUserIds.includes(activeFriend.friend_id);
+    
+    if (!isFriendOnline) {
+      alert("Cannot call: Friend is offline");
       return;
     }
 
