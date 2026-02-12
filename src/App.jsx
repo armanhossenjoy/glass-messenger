@@ -33,6 +33,7 @@ function App() {
   const [unreadCounts, setUnreadCounts] = useState({}); // { friendId: count }
   const [isCallConnected, setIsCallConnected] = useState(false);
   const [onlineUserIds, setOnlineUserIds] = useState([]); // Array of peer IDs (user IDs) who are online
+  const [callState, setCallState] = useState('idle'); // 'idle' | 'calling' | 'ringing' | 'connected' | 'declined'
 
   // Timer Logic
   useEffect(() => {
@@ -512,6 +513,7 @@ function App() {
       return;
     }
 
+    setCallState('calling');
     setCallType(type);
     setIsCalling(true);
 
@@ -527,18 +529,31 @@ function App() {
       });
       setLocalStream(stream);
 
-      const outgoingCall = peer.call(activeFriend.friend_id, stream, { metadata: { type } });
+      const outgoingCall = peer.call(activeFriend.friend_id, stream, { metadata: { type, callerId: user.id } });
       setCall(outgoingCall);
 
+      // When peer answers and we get their stream
       outgoingCall.on('stream', (remote) => {
         console.log('📞 Call connected! Stream received.');
         setRemoteStream(remote);
         setIsCallConnected(true);
+        setCallState('connected');
+      });
+
+      // Detect when call object is established (ringing)
+      outgoingCall.on('open', () => {
+        console.log('📞 Call is ringing...');
+        setCallState('ringing');
       });
 
       outgoingCall.on('close', () => {
         console.log('📞 Call closed by peer');
-        endCall();
+        if (callState !== 'connected') {
+          setCallState('declined');
+          setTimeout(() => endCall(), 2000);
+        } else {
+          endCall();
+        }
       });
     } catch (err) {
       console.error("Call failed:", err);
@@ -576,6 +591,7 @@ function App() {
         console.log('📞 Call connected! Stream received.');
         setRemoteStream(remote);
         setIsCallConnected(true);
+        setCallState('connected');
       });
 
       incomingCall.on('close', () => {
@@ -601,6 +617,7 @@ function App() {
     setIsCalling(false);
     setCallType(null);
     setIsCallConnected(false);
+    setCallState('idle');
   };
 
   const handleLogout = async () => {
@@ -929,9 +946,20 @@ function App() {
                     <User size={80} />
                   </div>
                   <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '10px' }}>{activeFriend?.friend_username}</h2>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'monospace', opacity: 0.8, marginBottom: '20px' }}>
-                    {formatTime(callDuration)}
-                  </div>
+                  {callState === 'calling' && (
+                    <p style={{ fontSize: '16px', opacity: 0.7 }}>Calling...</p>
+                  )}
+                  {callState === 'ringing' && (
+                    <p style={{ fontSize: '16px', opacity: 0.7 }}>Ringing...</p>
+                  )}
+                  {callState === 'connected' && (
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'monospace', opacity: 0.8, marginBottom: '20px' }}>
+                      {formatTime(callDuration)}
+                    </div>
+                  )}
+                  {callState === 'declined' && (
+                    <p style={{ fontSize: '16px', color: 'var(--error-accent)' }}>Call Declined</p>
+                  )}
 
                   <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginBottom: '10px', background: 'rgba(0,0,0,0.5)', padding: '5px', borderRadius: '5px' }}>
                     DEBUG:
