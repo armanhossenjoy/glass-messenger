@@ -155,7 +155,17 @@ function App() {
   }, [localStream]);
 
   useEffect(() => {
-    if (remoteStream && remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
+    if (remoteStream && remoteVideoRef.current) {
+      console.log("Attaching remote stream to:", remoteVideoRef.current.tagName);
+      console.log("Remote Tracks:", remoteStream.getAudioTracks());
+      remoteVideoRef.current.srcObject = remoteStream;
+
+      // Force play to bypass some browser autoplay policies
+      remoteVideoRef.current.play().catch(err => {
+        console.error("Autoplay failed:", err);
+        alert("Click the screen to enable audio! (Browser Policy)");
+      });
+    }
   }, [remoteStream, callType]);
 
   useEffect(() => {
