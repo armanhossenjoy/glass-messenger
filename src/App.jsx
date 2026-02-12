@@ -105,6 +105,20 @@ function App() {
         const currentActiveFriend = activeFriendRef.current;
         console.log("☁️ Syncing Message:", msg);
 
+        // Sound and Unread Logic
+        if (msg.recipient_id === userId) {
+          playNotificationSound();
+          if (!currentActiveFriend || msg.sender_id !== currentActiveFriend.friend_id) {
+            setUnreadCounts(prev => ({
+              ...prev,
+              [msg.sender_id]: (prev[msg.sender_id] || 0) + 1
+            }));
+          } else {
+            // Already in chat, mark as read immediately
+            markMessagesAsRead(msg.sender_id);
+          }
+        }
+
         if (currentActiveFriend && (
           (msg.sender_id === userId && msg.recipient_id === currentActiveFriend.friend_id) ||
           (msg.sender_id === currentActiveFriend.friend_id && msg.recipient_id === userId)
@@ -123,6 +137,18 @@ function App() {
             }
             return [...prev, msg];
           });
+        }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, (payload) => {
+        const updatedMsg = payload.new;
+        const currentActiveFriend = activeFriendRef.current;
+
+        // Update unread messages list if they correspond to the active friend
+        if (currentActiveFriend && (
+          (updatedMsg.sender_id === userId && updatedMsg.recipient_id === currentActiveFriend.friend_id) ||
+          (updatedMsg.sender_id === currentActiveFriend.friend_id && updatedMsg.recipient_id === userId)
+        )) {
+          setMessages(prev => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
         }
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'friends', filter: `user_id=eq.${userId}` }, () => {
@@ -226,8 +252,29 @@ function App() {
   useEffect(() => {
     if (activeFriend && user) {
       fetchMessages(activeFriend.friend_id);
+      markMessagesAsRead(activeFriend.friend_id);
     }
   }, [activeFriend, user]);
+
+  const markMessagesAsRead = async (friendId) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .eq('recipient_id', user.id)
+        .eq('sender_id', friendId)
+        .eq('is_read', false);
+
+      if (error) {
+        // If the column doesn't exist, we'll get an error. 
+        // We log it but don't break the app.
+        console.warn("Read receipts might not be supported yet (is_read column missing?)", error);
+      }
+    } catch (err) {
+      console.error("Failed to mark messages as read:", err);
+    }
+  };
 
   const fetchProfile = async (userId, userEmail) => {
     let { data, error } = await supabase
@@ -672,10 +719,22 @@ function App() {
             <div
               key={i}
               className={`friend-item ${activeFriend?.friend_id === f.friend_id ? 'active' : ''}`}
-              onClick={() => { setActiveFriend(f); setView('chat'); }}
+              onClick={() => {
+                setActiveFriend(f);
+                setView('chat');
+                setUnreadCounts(prev => ({ ...prev, [f.friend_id]: 0 }));
+                markMessagesAsRead(f.friend_id);
+              }}
             >
-              <div style={{ width: '50px', height: '50px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', border: '1px solid var(--glass-border)' }}>
-                {f.friend_username?.[0]?.toUpperCase() || 'U'}
+              <div style={{ position: 'relative' }}>
+                <div style={{ width: '50px', height: '50px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', border: '1px solid var(--glass-border)' }}>
+                  {f.friend_username?.[0]?.toUpperCase() || 'U'}
+                </div>
+                {unreadCounts[f.friend_id] > 0 && (
+                  <div style={{ position: 'absolute', top: '-5px', right: '-5px', background: 'var(--error-accent)', color: 'white', fontSize: '10px', fontWeight: 'bold', minWidth: '18px', height: '18px', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--bg-dark)', zIndex: 10 }}>
+                    {unreadCounts[f.friend_id]}
+                  </div>
+                )}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: '700', fontSize: '16px', marginBottom: '2px' }}>{f.friend_username}</div>
@@ -729,8 +788,19 @@ function App() {
               {messages.map((m, i) => (
                 <div key={i} className={`message-bubble animate-message ${m.sender_id === user.id ? 'message-sent' : 'message-received'}`}>
                   {m.text}
-                  <div style={{ fontSize: '10px', opacity: 0.5, marginTop: '6px', textAlign: 'right' }}>
-                    {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', gap: '8px' }}>
+                    <div style={{ fontSize: '10px', opacity: 0.5 }}>
+                      {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                    {m.sender_id === user.id && (
+                      <div style={{ fontSize: '10px', opacity: 0.8, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        {m.is_read ? (
+                          <><Check size={10} /> Seen</>
+                        ) : (
+                          <Check size={10} />
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
