@@ -612,7 +612,6 @@ function App() {
         {/* Hidden Audio Players */}
         <audio ref={ringtoneRef} loop src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" />
         <audio ref={notificationSoundRef} src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3" />
-
         <div className="glass-card" style={{ padding: '50px 40px', width: '90%', maxWidth: '420px', textAlign: 'center', animation: 'slideUp 0.6s ease-out' }}>
           <div style={{ marginBottom: '32px' }}>
             <div style={{ background: 'linear-gradient(135deg, var(--primary-accent), var(--secondary-accent))', width: '90px', height: '90px', borderRadius: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 15px 30px rgba(99, 102, 241, 0.3)', transform: 'rotate(-5deg)' }}>
@@ -665,6 +664,9 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* Hidden Audio Players */}
+      <audio ref={ringtoneRef} loop src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" />
+      <audio ref={notificationSoundRef} src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3" />
       {/* SIDEBAR: FRIEND LIST */}
       <aside className={`sidebar glass-card ${view === 'list' ? 'active' : ''}`}>
         {/* Sidebar Header */}
@@ -952,6 +954,26 @@ function App() {
                 <input className="glass-input" value={bio} onChange={e => setBio(e.target.value)} placeholder="Something about you..." />
               </div>
               <button className="glass-button" style={{ background: 'var(--primary-accent)', border: 'none', marginTop: '10px' }} onClick={handleUpdateProfile}>Save Changes</button>
+
+              <div style={{ width: '100%', height: '1px', background: 'var(--glass-border)', margin: '10px 0' }}></div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="glass-button" style={{ flex: 1, fontSize: '12px' }} onClick={() => playNotificationSound()}>
+                  <Volume2 size={16} /> Test Notification
+                </button>
+                <button className="glass-button" style={{ flex: 1, fontSize: '12px' }} onClick={() => {
+                  if (ringtoneRef.current) {
+                    ringtoneRef.current.play().then(() => {
+                      setTimeout(() => {
+                        ringtoneRef.current.pause();
+                        ringtoneRef.current.currentTime = 0;
+                      }, 2000);
+                    });
+                  }
+                }}>
+                  <Phone size={16} /> Test Ringtone
+                </button>
+              </div>
 
               <div style={{ width: '100%', height: '1px', background: 'var(--glass-border)', margin: '10px 0' }}></div>
 
