@@ -138,13 +138,23 @@ function App() {
         const newState = channel.presenceState();
         const onlineIds = Object.keys(newState);
         console.log("🟢 Online Users Sync:", onlineIds);
+        console.log("Current user ID:", userId);
+        console.log("All presence data:", newState);
         setOnlineUserIds(onlineIds);
       })
-      .on('presence', { event: 'join', key: userId }, ({ newPresences }) => {
+      .on('presence', { event: 'join' }, ({ newPresences }) => {
         console.log('User joined:', newPresences);
+        // Update online users list when someone joins
+        const newState = channel.presenceState();
+        const onlineIds = Object.keys(newState);
+        setOnlineUserIds(onlineIds);
       })
-      .on('presence', { event: 'leave', key: userId }, ({ leftPresences }) => {
+      .on('presence', { event: 'leave' }, ({ leftPresences }) => {
         console.log('User left:', leftPresences);
+        // Update online users list when someone leaves
+        const newState = channel.presenceState();
+        const onlineIds = Object.keys(newState);
+        setOnlineUserIds(onlineIds);
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         const msg = payload.new;
