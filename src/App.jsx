@@ -731,12 +731,20 @@ function App() {
                     {formatTime(callDuration)}
                   </div>
 
-                  {/* TRICK: Use VIDEO tag for audio to enforce Loudspeaker on Mobile */}
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginBottom: '10px', background: 'rgba(0,0,0,0.5)', padding: '5px', borderRadius: '5px' }}>
+                    DEBUG:
+                    Stream: {remoteStream ? 'Active' : 'No'} |
+                    Tracks: {remoteStream?.getAudioTracks().length || 0} |
+                    Muted: {remoteVideoRef.current?.muted ? 'Yes' : 'No'} |
+                    Paused: {remoteVideoRef.current?.paused ? 'Yes' : 'No'}
+                  </div>
+
+                  {/* TRICK: Use VIDEO tag for audio to enforce Loudspeaker on Mobile (1px visible to prevent aggressive browser optimization) */}
                   <video
                     ref={remoteVideoRef}
                     autoPlay
                     playsInline
-                    style={{ width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' }}
+                    style={{ width: '1px', height: '1px', opacity: 0.1, pointerEvents: 'none', position: 'absolute' }}
                   />
                 </div>
               )}
