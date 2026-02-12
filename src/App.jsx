@@ -29,6 +29,22 @@ function App() {
   const [incomingCall, setIncomingCall] = useState(null);
   const [isCalling, setIsCalling] = useState(false);
   const [callType, setCallType] = useState(null); // 'audio' or 'video'
+  const [callDuration, setCallDuration] = useState(0);
+
+  // Timer Logic
+  useEffect(() => {
+    let interval;
+    if (isCalling) {
+      interval = setInterval(() => setCallDuration(prev => prev + 1), 1000);
+      document.title = `Call (${Math.floor(callDuration / 60)}:${(callDuration % 60).toString().padStart(2, '0')}) - PMFP`;
+    } else {
+      setCallDuration(0);
+      document.title = "PMFP";
+    }
+    return () => clearInterval(interval);
+  }, [isCalling, callDuration]);
+
+  const formatTime = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
 
   const messagesEndRef = useRef(null);
   const activeFriendRef = useRef(null);
@@ -692,22 +708,7 @@ function App() {
         </div>
       )}
 
-      const [callDuration, setCallDuration] = useState(0);
 
-  // Timer Logic
-  useEffect(() => {
-        let interval;
-      if (isCalling) {
-        interval = setInterval(() => setCallDuration(prev => prev + 1), 1000);
-      document.title = `Call (${Math.floor(callDuration / 60)}:${(callDuration % 60).toString().padStart(2, '0')}) - PMFP`;
-    } else {
-        setCallDuration(0);
-      document.title = "PMFP";
-    }
-    return () => clearInterval(interval);
-  }, [isCalling, callDuration]);
-
-  const formatTime = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
 
       // ... (rest of render)
 
