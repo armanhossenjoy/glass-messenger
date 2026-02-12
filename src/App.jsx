@@ -19,7 +19,8 @@ function App() {
   const [view, setView] = useState('list'); // 'list' or 'chat'
   const [copied, setCopied] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [displayName, setDisplayName] = useState('');
+  const [displayName, setDisplayName] = useState(''); // This is the UNIQUE USERNAME (ID)
+  const [fullName, setFullName] = useState(''); // This is the VISIBLE NAME
   const [bio, setBio] = useState('');
   const [syncStatus, setSyncStatus] = useState('connecting'); // 'online', 'connecting', 'error'
   const [localStream, setLocalStream] = useState(null);
@@ -190,6 +191,7 @@ function App() {
 
     if (data) {
       setDisplayName(data.username || '');
+      setFullName(data.full_name || '');
       setBio(data.avatar_url || '');
     }
   };
@@ -333,6 +335,7 @@ function App() {
       .upsert({
         id: user.id,
         username: finalUsername,
+        full_name: fullName,
         avatar_url: bio,
         updated_at: new Date()
       });
@@ -522,7 +525,7 @@ function App() {
               <User size={24} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>{displayName || 'Setting up...'}</h3>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>{fullName || displayName || 'Setting up...'}</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: syncStatus === 'online' ? 'var(--success-accent)' : syncStatus === 'connecting' ? '#facc15' : 'var(--error-accent)', boxShadow: `0 0 10px ${syncStatus === 'online' ? 'var(--success-accent)' : 'transparent'}` }}></div>
                 <span style={{ fontSize: '11px', opacity: 0.6 }}>{syncStatus === 'online' ? 'Connected' : 'Syncing...'}</span>
@@ -726,8 +729,18 @@ function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>Display Name</label>
-                <input className="glass-input" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="How friends see you" />
+                <input className="glass-input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your Name (e.g. Arman)" />
               </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>User ID (Unique)</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input className="glass-input" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Unique ID (e.g. arman_1234)" />
+                  <button className="glass-button" onClick={() => { navigator.clipboard.writeText(displayName); alert("ID Copied!") }} title="Copy ID"><Copy size={18} /></button>
+                </div>
+                <p style={{ fontSize: '11px', opacity: 0.5, marginTop: '5px' }}>*Use this ID to add friends.</p>
+              </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>About / Bio</label>
                 <input className="glass-input" value={bio} onChange={e => setBio(e.target.value)} placeholder="Something about you..." />
