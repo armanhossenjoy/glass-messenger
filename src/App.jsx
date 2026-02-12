@@ -305,18 +305,42 @@ function App() {
   };
 
   const handleUpdateProfile = async () => {
+    let finalUsername = displayName.trim();
+
+    // 1. Ensure 4-digit suffix exists (Format: Name_1234)
+    const suffixRegex = /_(\d{4})$/;
+    if (!suffixRegex.test(finalUsername)) {
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      finalUsername = `${finalUsername}_${randomSuffix}`;
+    }
+
+    // 2. Check uniqueness (optional but good practice)
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', finalUsername)
+      .neq('id', user.id)
+      .single();
+
+    if (existing) {
+      // Collision detected, try new suffix
+      const newSuffix = Math.floor(1000 + Math.random() * 9000);
+      finalUsername = `${displayName.trim().replace(suffixRegex, '')}_${newSuffix}`;
+    }
+
     const { error } = await supabase
       .from('profiles')
       .upsert({
         id: user.id,
-        username: displayName,
+        username: finalUsername,
         avatar_url: bio,
         updated_at: new Date()
       });
 
     if (!error) {
+      setDisplayName(finalUsername); // Update UI with the full ID
       setShowProfile(false);
-      alert("Profile updated!");
+      alert(`Profile updated! Your ID is: ${finalUsername}`);
     } else {
       alert("Error: " + error.message);
     }
