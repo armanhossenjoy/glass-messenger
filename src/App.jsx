@@ -374,7 +374,12 @@ function App() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: type === 'video',
-        audio: true
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          latency: 0
+        }
       });
       setLocalStream(stream);
 
@@ -407,7 +412,12 @@ function App() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: callType === 'video',
-        audio: true
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          latency: 0
+        }
       });
       setLocalStream(stream);
       incomingCall.answer(stream);
