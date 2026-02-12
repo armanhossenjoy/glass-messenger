@@ -31,11 +31,13 @@ function App() {
   const [callType, setCallType] = useState(null); // 'audio' or 'video'
   const [callDuration, setCallDuration] = useState(0);
   const [unreadCounts, setUnreadCounts] = useState({}); // { friendId: count }
+  const [isCallConnected, setIsCallConnected] = useState(false);
+  const [onlineUserIds, setOnlineUserIds] = useState([]); // Array of peer IDs (user IDs) who are online
 
   // Timer Logic
   useEffect(() => {
     let interval;
-    if (isCalling) {
+    if (isCalling && isCallConnected) {
       interval = setInterval(() => setCallDuration(prev => prev + 1), 1000);
       document.title = `Call (${Math.floor(callDuration / 60)}:${(callDuration % 60).toString().padStart(2, '0')}) - PMFP`;
     } else {
@@ -43,7 +45,7 @@ function App() {
       document.title = "PMFP";
     }
     return () => clearInterval(interval);
-  }, [isCalling, callDuration]);
+  }, [isCalling, isCallConnected, callDuration]);
 
   const formatTime = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
 
@@ -99,7 +101,25 @@ function App() {
     setSyncStatus('connecting');
 
     const channel = supabase
-      .channel(`sync-all-${userId}`)
+      .channel(`sync-all-${userId}`, {
+        config: {
+          presence: {
+            key: userId,
+          },
+        },
+      })
+      .on('presence', { event: 'sync' }, () => {
+        const newState = channel.presenceState();
+        const onlineIds = Object.keys(newState);
+        console.log("🟢 Online Users Sync:", onlineIds);
+        setOnlineUserIds(onlineIds);
+      })
+      .on('presence', { event: 'join', key: userId }, ({ newPresences }) => {
+        console.log('User joined:', newPresences);
+      })
+      .on('presence', { event: 'leave', key: userId }, ({ leftPresences }) => {
+        console.log('User left:', leftPresences);
+      })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         const msg = payload.new;
         const currentActiveFriend = activeFriendRef.current;
@@ -154,9 +174,12 @@ function App() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'friends', filter: `user_id=eq.${userId}` }, () => {
         fetchFriends(userId);
       })
-      .subscribe((status) => {
+      .subscribe(async (status) => {
         console.log("SYNC STATUS:", status);
-        if (status === 'SUBSCRIBED') setSyncStatus('online');
+        if (status === 'SUBSCRIBED') {
+          setSyncStatus('online');
+          await channel.track({ online_at: new Date().toISOString() });
+        }
         else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') setSyncStatus('error');
       });
 
@@ -244,8 +267,13 @@ function App() {
 
   // Play notification on new message (helper)
   const playNotificationSound = () => {
+    console.log('🔔 Attempting to play notification sound...');
     if (notificationSoundRef.current) {
-      notificationSoundRef.current.play().catch(err => console.log("Notification blocked:", err));
+      notificationSoundRef.current.play()
+        .then(() => console.log('🔔 Notification sound played successfully'))
+        .catch(err => console.warn("🔕 Notification blocked by browser:", err));
+    } else {
+      console.error('🔕 Notification sound ref is null!');
     }
   };
 
@@ -489,10 +517,15 @@ function App() {
       setCall(outgoingCall);
 
       outgoingCall.on('stream', (remote) => {
+        console.log('📞 Call connected! Stream received.');
         setRemoteStream(remote);
+        setIsCallConnected(true);
       });
 
-      outgoingCall.on('close', () => endCall());
+      outgoingCall.on('close', () => {
+        console.log('📞 Call closed by peer');
+        endCall();
+      });
     } catch (err) {
       console.error("Call failed:", err);
       alert("Could not access camera/mic.");
@@ -526,10 +559,15 @@ function App() {
       setCall(incomingCall);
 
       incomingCall.on('stream', (remote) => {
+        console.log('📞 Call connected! Stream received.');
         setRemoteStream(remote);
+        setIsCallConnected(true);
       });
 
-      incomingCall.on('close', () => endCall());
+      incomingCall.on('close', () => {
+        console.log('📞 Call closed by peer');
+        endCall();
+      });
       setIncomingCall(null);
     } catch (err) {
       console.error("Accept failed:", err);
@@ -539,6 +577,7 @@ function App() {
   };
 
   const endCall = () => {
+    console.log('📞 Ending call and resetting state');
     if (call) call.close();
     if (localStream) localStream.getTracks().forEach(track => track.stop());
     setCall(null);
@@ -547,6 +586,7 @@ function App() {
     setRemoteStream(null);
     setIsCalling(false);
     setCallType(null);
+    setIsCallConnected(false);
   };
 
   const handleLogout = async () => {
@@ -740,9 +780,13 @@ function App() {
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: '700', fontSize: '16px', marginBottom: '2px' }}>{f.friend_username}</div>
-                <div style={{ fontSize: '13px', color: 'var(--success-accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success-accent)' }}></div> Active Now
-                </div>
+                {onlineUserIds.includes(f.friend_id) ? (
+                  <div style={{ fontSize: '13px', color: 'var(--success-accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success-accent)' }}></div> Active Now
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', opacity: 0.5 }}>Offline</div>
+                )}
               </div>
             </div>
           ))}
