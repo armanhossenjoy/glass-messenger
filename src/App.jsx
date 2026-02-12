@@ -612,287 +612,288 @@ function App() {
             </span>
           </p>
         </div>
-        );
+      </>
+    );
   }
 
-        return (
-        <div className="app-container">
-          {/* SIDEBAR: FRIEND LIST */}
-          <aside className={`sidebar glass-card ${view === 'list' ? 'active' : ''}`}>
-            {/* Sidebar Header */}
-            <div style={{ padding: '24px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }} onClick={() => setShowProfile(true)}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--glass-border)' }}>
-                  <User size={24} />
-                </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>{fullName || displayName || 'Setting up...'}</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: syncStatus === 'online' ? 'var(--success-accent)' : syncStatus === 'connecting' ? '#facc15' : 'var(--error-accent)', boxShadow: `0 0 10px ${syncStatus === 'online' ? 'var(--success-accent)' : 'transparent'}` }}></div>
-                    <span style={{ fontSize: '11px', opacity: 0.6 }}>{syncStatus === 'online' ? 'Connected' : 'Syncing...'}</span>
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="glass-button" style={{ padding: '10px', borderRadius: '12px' }} onClick={() => fetchFriends(user.id)} title="Refresh"><Search size={18} /></button>
+  return (
+    <div className="app-container">
+      {/* SIDEBAR: FRIEND LIST */}
+      <aside className={`sidebar glass-card ${view === 'list' ? 'active' : ''}`}>
+        {/* Sidebar Header */}
+        <div style={{ padding: '24px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }} onClick={() => setShowProfile(true)}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--glass-border)' }}>
+              <User size={24} />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>{fullName || displayName || 'Setting up...'}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: syncStatus === 'online' ? 'var(--success-accent)' : syncStatus === 'connecting' ? '#facc15' : 'var(--error-accent)', boxShadow: `0 0 10px ${syncStatus === 'online' ? 'var(--success-accent)' : 'transparent'}` }}></div>
+                <span style={{ fontSize: '11px', opacity: 0.6 }}>{syncStatus === 'online' ? 'Connected' : 'Syncing...'}</span>
               </div>
             </div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="glass-button" style={{ padding: '10px', borderRadius: '12px' }} onClick={() => fetchFriends(user.id)} title="Refresh"><Search size={18} /></button>
+          </div>
+        </div>
 
-            {/* Add Friend Section */}
-            <div style={{ padding: '20px', borderBottom: '1px solid var(--glass-border)' }}>
-              <div style={{ display: 'flex', gap: '10px', position: 'relative' }}>
-                <input
-                  className="glass-input"
-                  placeholder="Friend ID (name_1234)"
-                  value={friendInput}
-                  onChange={e => setFriendInput(e.target.value)}
-                  style={{ flex: 1, paddingRight: '45px' }}
-                />
+        {/* Add Friend Section */}
+        <div style={{ padding: '20px', borderBottom: '1px solid var(--glass-border)' }}>
+          <div style={{ display: 'flex', gap: '10px', position: 'relative' }}>
+            <input
+              className="glass-input"
+              placeholder="Friend ID (name_1234)"
+              value={friendInput}
+              onChange={e => setFriendInput(e.target.value)}
+              style={{ flex: 1, paddingRight: '45px' }}
+            />
+            <button
+              className="glass-button"
+              style={{ position: 'absolute', right: '5px', top: '5px', bottom: '5px', width: '40px', padding: 0, borderRadius: '10px', background: 'transparent', border: 'none' }}
+              onClick={handleAddFriend}
+            >
+              <UserPlus size={20} color="var(--primary-accent)" />
+            </button>
+          </div>
+        </div>
+
+        {/* Friends List */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 0' }}>
+          <p style={{ padding: '0 24px 12px', fontSize: '11px', fontWeight: '800', opacity: 0.4, textTransform: 'uppercase', letterSpacing: '2px' }}>Recent Chats</p>
+          {friends.length === 0 && (
+            <div style={{ padding: '60px 20px', textAlign: 'center', opacity: 0.3 }}>
+              <MessageSquare size={48} style={{ margin: '0 auto 20px' }} />
+              <p style={{ fontSize: '15px' }}>Your chat list is empty.<br />Add a friend to start!</p>
+            </div>
+          )}
+          {friends.map((f, i) => (
+            <div
+              key={i}
+              className={`friend-item ${activeFriend?.friend_id === f.friend_id ? 'active' : ''}`}
+              onClick={() => { setActiveFriend(f); setView('chat'); }}
+            >
+              <div style={{ width: '50px', height: '50px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', border: '1px solid var(--glass-border)' }}>
+                {f.friend_username?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: '700', fontSize: '16px', marginBottom: '2px' }}>{f.friend_username}</div>
+                <div style={{ fontSize: '13px', color: 'var(--success-accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success-accent)' }}></div> Active Now
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      {/* MAIN VIEW: CHAT AREA */}
+      <main className={`main-view glass-card ${view === 'chat' ? 'active' : ''}`}>
+        {!activeFriend ? (
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.4, padding: '40px', textAlign: 'center' }}>
+            <div style={{ width: '120px', height: '120px', borderRadius: '40px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
+              <MessageSquare size={60} />
+            </div>
+            <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '10px' }}>Select a Conversation</h2>
+            <p style={{ maxWidth: '300px', lineHeight: '1.6' }}>Choose a friend from the sidebar or add a new one to start messaging instantly.</p>
+          </div>
+        ) : (
+          <>
+            {/* Chat Header */}
+            <div className="chat-header" style={{ borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, paddingRight: '10px' }}>
                 <button
-                  className="glass-button"
-                  style={{ position: 'absolute', right: '5px', top: '5px', bottom: '5px', width: '40px', padding: 0, borderRadius: '10px', background: 'transparent', border: 'none' }}
-                  onClick={handleAddFriend}
+                  className="glass-button mobile-only"
+                  style={{ padding: '8px', borderRadius: '10px', flexShrink: 0 }}
+                  onClick={() => setView('list')}
                 >
-                  <UserPlus size={20} color="var(--primary-accent)" />
+                  <ArrowLeft size={18} />
                 </button>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, var(--primary-accent), var(--secondary-accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 'bold', flexShrink: 0 }}>
+                  {activeFriend.friend_username?.[0]?.toUpperCase()}
+                </div>
+                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{activeFriend.friend_username}</h3>
+                  <span style={{ fontSize: '11px', color: 'var(--success-accent)', fontWeight: '600' }}>Online</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                <button className="glass-button" style={{ padding: '8px' }} onClick={() => startCall('audio')} title="Audio Call"><Phone size={18} /></button>
+                <button className="glass-button" style={{ padding: '8px' }} onClick={() => startCall('video')} title="Video Call"><Video size={18} /></button>
               </div>
             </div>
 
-            {/* Friends List */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 0' }}>
-              <p style={{ padding: '0 24px 12px', fontSize: '11px', fontWeight: '800', opacity: 0.4, textTransform: 'uppercase', letterSpacing: '2px' }}>Recent Chats</p>
-              {friends.length === 0 && (
-                <div style={{ padding: '60px 20px', textAlign: 'center', opacity: 0.3 }}>
-                  <MessageSquare size={48} style={{ margin: '0 auto 20px' }} />
-                  <p style={{ fontSize: '15px' }}>Your chat list is empty.<br />Add a friend to start!</p>
-                </div>
-              )}
-              {friends.map((f, i) => (
-                <div
-                  key={i}
-                  className={`friend-item ${activeFriend?.friend_id === f.friend_id ? 'active' : ''}`}
-                  onClick={() => { setActiveFriend(f); setView('chat'); }}
-                >
-                  <div style={{ width: '50px', height: '50px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', border: '1px solid var(--glass-border)' }}>
-                    {f.friend_username?.[0]?.toUpperCase() || 'U'}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '700', fontSize: '16px', marginBottom: '2px' }}>{f.friend_username}</div>
-                    <div style={{ fontSize: '13px', color: 'var(--success-accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success-accent)' }}></div> Active Now
-                    </div>
+            {/* Messages Area */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {messages.map((m, i) => (
+                <div key={i} className={`message-bubble animate-message ${m.sender_id === user.id ? 'message-sent' : 'message-received'}`}>
+                  {m.text}
+                  <div style={{ fontSize: '10px', opacity: 0.5, marginTop: '6px', textAlign: 'right' }}>
+                    {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
-          </aside>
 
-          {/* MAIN VIEW: CHAT AREA */}
-          <main className={`main-view glass-card ${view === 'chat' ? 'active' : ''}`}>
-            {!activeFriend ? (
-              <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.4, padding: '40px', textAlign: 'center' }}>
-                <div style={{ width: '120px', height: '120px', borderRadius: '40px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
-                  <MessageSquare size={60} />
-                </div>
-                <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '10px' }}>Select a Conversation</h2>
-                <p style={{ maxWidth: '300px', lineHeight: '1.6' }}>Choose a friend from the sidebar or add a new one to start messaging instantly.</p>
+            {/* Input Area */}
+            <form onSubmit={handleSendMessage} className="chat-input-area">
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button type="button" className="glass-button" style={{ padding: '10px', borderRadius: '12px', flexShrink: 0 }}><ImageIcon size={20} /></button>
+                <input
+                  className="glass-input"
+                  placeholder="Message..."
+                  value={inputText}
+                  onChange={e => setInputText(e.target.value)}
+                  style={{ flex: 1, minWidth: 0, height: '44px' }}
+                />
+                <button type="submit" className="glass-button" style={{ width: '44px', height: '44px', padding: 0, borderRadius: '12px', background: 'var(--primary-accent)', flexShrink: 0 }}>
+                  <Send size={20} />
+                </button>
               </div>
-            ) : (
-              <>
-                {/* Chat Header */}
-                <div className="chat-header" style={{ borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, paddingRight: '10px' }}>
-                    <button
-                      className="glass-button mobile-only"
-                      style={{ padding: '8px', borderRadius: '10px', flexShrink: 0 }}
-                      onClick={() => setView('list')}
-                    >
-                      <ArrowLeft size={18} />
-                    </button>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, var(--primary-accent), var(--secondary-accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 'bold', flexShrink: 0 }}>
-                      {activeFriend.friend_username?.[0]?.toUpperCase()}
-                    </div>
-                    <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{activeFriend.friend_username}</h3>
-                      <span style={{ fontSize: '11px', color: 'var(--success-accent)', fontWeight: '600' }}>Online</span>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                    <button className="glass-button" style={{ padding: '8px' }} onClick={() => startCall('audio')} title="Audio Call"><Phone size={18} /></button>
-                    <button className="glass-button" style={{ padding: '8px' }} onClick={() => startCall('video')} title="Video Call"><Video size={18} /></button>
-                  </div>
-                </div>
+            </form>
+          </>
+        )}
+      </main>
 
-                {/* Messages Area */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {messages.map((m, i) => (
-                    <div key={i} className={`message-bubble animate-message ${m.sender_id === user.id ? 'message-sent' : 'message-received'}`}>
-                      {m.text}
-                      <div style={{ fontSize: '10px', opacity: 0.5, marginTop: '6px', textAlign: 'right' }}>
-                        {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Input Area */}
-                <form onSubmit={handleSendMessage} className="chat-input-area">
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <button type="button" className="glass-button" style={{ padding: '10px', borderRadius: '12px', flexShrink: 0 }}><ImageIcon size={20} /></button>
-                    <input
-                      className="glass-input"
-                      placeholder="Message..."
-                      value={inputText}
-                      onChange={e => setInputText(e.target.value)}
-                      style={{ flex: 1, minWidth: 0, height: '44px' }}
-                    />
-                    <button type="submit" className="glass-button" style={{ width: '44px', height: '44px', padding: 0, borderRadius: '12px', background: 'var(--primary-accent)', flexShrink: 0 }}>
-                      <Send size={20} />
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
-          </main>
-
-          {/* MODALS */}
-          {incomingCall && (
-            <div className="modal-overlay">
-              <div className="glass-card" style={{ width: '320px', padding: '40px', textAlign: 'center', animation: 'slideUp 0.4s ease' }}>
-                <div style={{ width: '80px', height: '80px', borderRadius: '30px', background: 'rgba(255,255,255,0.1)', margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {callType === 'video' ? <Video size={40} /> : <Phone size={40} />}
-                </div>
-                <h3 style={{ fontSize: '20px', fontWeight: '800' }}>Incoming {callType} Call</h3>
-                <p style={{ opacity: 0.6, marginBottom: '32px' }}>Your friend is calling you...</p>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button className="glass-button" style={{ flex: 1, background: 'var(--error-accent)', border: 'none' }} onClick={() => { incomingCall.close(); setIncomingCall(null); }}>Decline</button>
-                  <button className="glass-button" style={{ flex: 1, background: 'var(--success-accent)', border: 'none' }} onClick={acceptCall}>Accept</button>
-                </div>
-              </div>
+      {/* MODALS */}
+      {incomingCall && (
+        <div className="modal-overlay">
+          <div className="glass-card" style={{ width: '320px', padding: '40px', textAlign: 'center', animation: 'slideUp 0.4s ease' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '30px', background: 'rgba(255,255,255,0.1)', margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {callType === 'video' ? <Video size={40} /> : <Phone size={40} />}
             </div>
-          )}
+            <h3 style={{ fontSize: '20px', fontWeight: '800' }}>Incoming {callType} Call</h3>
+            <p style={{ opacity: 0.6, marginBottom: '32px' }}>Your friend is calling you...</p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button className="glass-button" style={{ flex: 1, background: 'var(--error-accent)', border: 'none' }} onClick={() => { incomingCall.close(); setIncomingCall(null); }}>Decline</button>
+              <button className="glass-button" style={{ flex: 1, background: 'var(--success-accent)', border: 'none' }} onClick={acceptCall}>Accept</button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
 
       // ... (rest of render)
 
-          {isCalling && (
-            <div className="modal-overlay" style={{ background: 'rgba(15, 23, 42, 0.95)' }}>
-              <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {callType === 'video' ? (
-                    <>
-                      <video ref={remoteVideoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <video ref={localVideoRef} autoPlay playsInline muted style={{ width: '120px', height: '180px', position: 'absolute', bottom: '120px', right: '30px', borderRadius: '20px', border: '2px solid rgba(255,255,255,0.2)', objectFit: 'cover' }} />
-                    </>
-                  ) : (
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ width: '140px', height: '140px', borderRadius: '50px', background: 'rgba(255,255,255,0.05)', margin: '0 auto 30px', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse 2s infinite' }}>
-                        <User size={80} />
-                      </div>
-                      <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '10px' }}>{activeFriend?.friend_username}</h2>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'monospace', opacity: 0.8, marginBottom: '20px' }}>
-                        {formatTime(callDuration)}
-                      </div>
+      {isCalling && (
+        <div className="modal-overlay" style={{ background: 'rgba(15, 23, 42, 0.95)' }}>
+          <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {callType === 'video' ? (
+                <>
+                  <video ref={remoteVideoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <video ref={localVideoRef} autoPlay playsInline muted style={{ width: '120px', height: '180px', position: 'absolute', bottom: '120px', right: '30px', borderRadius: '20px', border: '2px solid rgba(255,255,255,0.2)', objectFit: 'cover' }} />
+                </>
+              ) : (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ width: '140px', height: '140px', borderRadius: '50px', background: 'rgba(255,255,255,0.05)', margin: '0 auto 30px', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse 2s infinite' }}>
+                    <User size={80} />
+                  </div>
+                  <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '10px' }}>{activeFriend?.friend_username}</h2>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'monospace', opacity: 0.8, marginBottom: '20px' }}>
+                    {formatTime(callDuration)}
+                  </div>
 
-                      <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginBottom: '10px', background: 'rgba(0,0,0,0.5)', padding: '5px', borderRadius: '5px' }}>
-                        DEBUG:
-                        Stream: {remoteStream ? 'Active' : 'No'} |
-                        Tracks: {remoteStream?.getAudioTracks().length || 0} |
-                        Muted: {remoteVideoRef.current?.muted ? 'Yes' : 'No'} |
-                        Paused: {remoteVideoRef.current?.paused ? 'Yes' : 'No'}
-                      </div>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginBottom: '10px', background: 'rgba(0,0,0,0.5)', padding: '5px', borderRadius: '5px' }}>
+                    DEBUG:
+                    Stream: {remoteStream ? 'Active' : 'No'} |
+                    Tracks: {remoteStream?.getAudioTracks().length || 0} |
+                    Muted: {remoteVideoRef.current?.muted ? 'Yes' : 'No'} |
+                    Paused: {remoteVideoRef.current?.paused ? 'Yes' : 'No'}
+                  </div>
 
-                      {/* TRICK: Use VIDEO tag for audio to enforce Loudspeaker on Mobile (1px visible to prevent aggressive browser optimization) */}
-                      <video
-                        ref={remoteVideoRef}
-                        autoPlay
-                        playsInline
-                        style={{ width: '1px', height: '1px', opacity: 0.1, pointerEvents: 'none', position: 'absolute' }}
-                      />
-                    </div>
-                  )}
+                  {/* TRICK: Use VIDEO tag for audio to enforce Loudspeaker on Mobile (1px visible to prevent aggressive browser optimization) */}
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    style={{ width: '1px', height: '1px', opacity: 0.1, pointerEvents: 'none', position: 'absolute' }}
+                  />
                 </div>
-                <div style={{ padding: '60px', background: 'linear-gradient(transparent, rgba(0,0,0,0.4))', display: 'flex', justifyContent: 'center', gap: '20px' }}>
-                  <button className="glass-button" style={{ width: '60px', height: '60px', borderRadius: '30px', background: 'rgba(255,255,255,0.1)', border: 'none' }} onClick={() => {
-                    // Attempt to toggle speaker (experimental)
-                    if (remoteVideoRef.current && remoteVideoRef.current.setSinkId) {
-                      // This is just a placeholder action as setSinkId needs device ID
-                      alert("To switch to Speaker, please use your device's volume settings or control center.");
-                    } else {
-                      alert("Please use your phone's Control Center to toggle Speaker/Earpiece.");
-                    }
-                  }} title="Speaker">
-                    <Volume2 size={24} />
-                  </button>
-
-                  <button className="glass-button" style={{ width: '70px', height: '70px', borderRadius: '35px', background: 'var(--error-accent)', border: 'none', padding: 0 }} onClick={endCall}>
-                    <X size={32} />
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
-          )}
+            <div style={{ padding: '60px', background: 'linear-gradient(transparent, rgba(0,0,0,0.4))', display: 'flex', justifyContent: 'center', gap: '20px' }}>
+              <button className="glass-button" style={{ width: '60px', height: '60px', borderRadius: '30px', background: 'rgba(255,255,255,0.1)', border: 'none' }} onClick={() => {
+                // Attempt to toggle speaker (experimental)
+                if (remoteVideoRef.current && remoteVideoRef.current.setSinkId) {
+                  // This is just a placeholder action as setSinkId needs device ID
+                  alert("To switch to Speaker, please use your device's volume settings or control center.");
+                } else {
+                  alert("Please use your phone's Control Center to toggle Speaker/Earpiece.");
+                }
+              }} title="Speaker">
+                <Volume2 size={24} />
+              </button>
 
-          {showProfile && (
-            <div className="modal-overlay" onClick={() => setShowProfile(false)} style={{ padding: '20px', overflowY: 'auto' }}>
-              <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '40px', position: 'relative', animation: 'slideUp 0.4s ease', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-                <button style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'white', cursor: 'pointer', opacity: 0.5 }} onClick={() => setShowProfile(false)}>
-                  <X size={24} />
-                </button>
-                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                  <div style={{ width: '100px', height: '100px', borderRadius: '35px', background: 'linear-gradient(135deg, var(--primary-accent), var(--secondary-accent))', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                    <User size={50} color="white" />
-                    <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', width: '32px', height: '32px', background: 'var(--bg-dark)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--glass-border)' }}>
-                      <Camera size={16} />
-                    </div>
-                  </div>
-                  <h2 style={{ fontSize: '24px', fontWeight: '800', margin: 0 }}>My Profile</h2>
-                </div>
-
-                <div style={{ marginBottom: '24px' }}>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>Your Shareable ID</label>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <code style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--primary-accent)' }}>{displayName}</code>
-                    <button style={{ background: 'none', border: 'none', color: 'var(--primary-accent)', cursor: 'pointer' }} onClick={() => { navigator.clipboard.writeText(displayName); setCopied(true); setTimeout(() => setCopied(false), 2000); }}>
-                      {copied ? <Check size={20} /> : <Copy size={20} />}
-                    </button>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>Display Name</label>
-                    <input className="glass-input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your Name (e.g. Arman)" />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>User ID (Unique)</label>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <input className="glass-input" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Unique ID (e.g. arman_1234)" />
-                      <button className="glass-button" onClick={() => { navigator.clipboard.writeText(displayName); alert("ID Copied!") }} title="Copy ID"><Copy size={18} /></button>
-                    </div>
-                    <p style={{ fontSize: '11px', opacity: 0.5, marginTop: '5px' }}>*Use this ID to add friends.</p>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>About / Bio</label>
-                    <input className="glass-input" value={bio} onChange={e => setBio(e.target.value)} placeholder="Something about you..." />
-                  </div>
-                  <button className="glass-button" style={{ background: 'var(--primary-accent)', border: 'none', marginTop: '10px' }} onClick={handleUpdateProfile}>Save Changes</button>
-
-                  <div style={{ width: '100%', height: '1px', background: 'var(--glass-border)', margin: '10px 0' }}></div>
-
-                  <button className="glass-button" style={{ background: 'rgba(239, 68, 68, 0.15)', color: 'var(--error-accent)', border: 'none', justifyContent: 'center' }} onClick={handleLogout}>
-                    <LogOut size={18} /> Logout
-                  </button>
-                </div>
-              </div>
+              <button className="glass-button" style={{ width: '70px', height: '70px', borderRadius: '35px', background: 'var(--error-accent)', border: 'none', padding: 0 }} onClick={endCall}>
+                <X size={32} />
+              </button>
             </div>
-          )}
+          </div>
         </div>
-        );
+      )}
+
+      {showProfile && (
+        <div className="modal-overlay" onClick={() => setShowProfile(false)} style={{ padding: '20px', overflowY: 'auto' }}>
+          <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '40px', position: 'relative', animation: 'slideUp 0.4s ease', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <button style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'white', cursor: 'pointer', opacity: 0.5 }} onClick={() => setShowProfile(false)}>
+              <X size={24} />
+            </button>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <div style={{ width: '100px', height: '100px', borderRadius: '35px', background: 'linear-gradient(135deg, var(--primary-accent), var(--secondary-accent))', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <User size={50} color="white" />
+                <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', width: '32px', height: '32px', background: 'var(--bg-dark)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--glass-border)' }}>
+                  <Camera size={16} />
+                </div>
+              </div>
+              <h2 style={{ fontSize: '24px', fontWeight: '800', margin: 0 }}>My Profile</h2>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>Your Shareable ID</label>
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <code style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--primary-accent)' }}>{displayName}</code>
+                <button style={{ background: 'none', border: 'none', color: 'var(--primary-accent)', cursor: 'pointer' }} onClick={() => { navigator.clipboard.writeText(displayName); setCopied(true); setTimeout(() => setCopied(false), 2000); }}>
+                  {copied ? <Check size={20} /> : <Copy size={20} />}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>Display Name</label>
+                <input className="glass-input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your Name (e.g. Arman)" />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>User ID (Unique)</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input className="glass-input" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Unique ID (e.g. arman_1234)" />
+                  <button className="glass-button" onClick={() => { navigator.clipboard.writeText(displayName); alert("ID Copied!") }} title="Copy ID"><Copy size={18} /></button>
+                </div>
+                <p style={{ fontSize: '11px', opacity: 0.5, marginTop: '5px' }}>*Use this ID to add friends.</p>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', opacity: 0.6, textTransform: 'uppercase' }}>About / Bio</label>
+                <input className="glass-input" value={bio} onChange={e => setBio(e.target.value)} placeholder="Something about you..." />
+              </div>
+              <button className="glass-button" style={{ background: 'var(--primary-accent)', border: 'none', marginTop: '10px' }} onClick={handleUpdateProfile}>Save Changes</button>
+
+              <div style={{ width: '100%', height: '1px', background: 'var(--glass-border)', margin: '10px 0' }}></div>
+
+              <button className="glass-button" style={{ background: 'rgba(239, 68, 68, 0.15)', color: 'var(--error-accent)', border: 'none', justifyContent: 'center' }} onClick={handleLogout}>
+                <LogOut size={18} /> Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
-        export default App;
+export default App;
