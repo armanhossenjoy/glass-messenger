@@ -811,8 +811,8 @@ function App() {
       )}
 
       {showProfile && (
-        <div className="modal-overlay" onClick={() => setShowProfile(false)}>
-          <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '40px', position: 'relative', animation: 'slideUp 0.4s ease' }} onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => setShowProfile(false)} style={{ padding: '20px', overflowY: 'auto' }}>
+          <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '40px', position: 'relative', animation: 'slideUp 0.4s ease', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <button style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'white', cursor: 'pointer', opacity: 0.5 }} onClick={() => setShowProfile(false)}>
               <X size={24} />
             </button>
