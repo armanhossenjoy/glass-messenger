@@ -600,7 +600,8 @@ function App() {
         console.log('📞 Call closed by peer');
         if (callState !== 'connected') {
           setCallState('declined');
-          setTimeout(() => endCall(), 2000);
+          // End call immediately when declined, don't wait 2 seconds
+          setTimeout(() => endCall(), 500);
         } else {
           endCall();
         }
