@@ -127,7 +127,7 @@ function App() {
     setSyncStatus('connecting');
 
     const channel = supabase
-      .channel(`sync-all-${userId}`, {
+      .channel(`sync-all`, {
         config: {
           presence: {
             key: userId,
